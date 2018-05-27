@@ -234,32 +234,6 @@ def statRot(node):
         node4 = staticRotateZ3D(node2,rotateZ)
         return node4
 
-"""def order(lql, nqdes):
-        newList = []
-        averages = []
-        comp = []
-        #Create a list of averages
-        for pol in lql:
-                myList = 0
-                for indice in pol:
-                        myList += nqdes[indice][2]
-                myList /= len(pol)
-                averages.append(myList)
-                comp.append([])
-        #Determine rank
-        ind = 0
-        for average in averages:
-                rank = 0
-                for average2 in averages:
-                        if average > average2:
-                                rank += 1
-                comp[rank].append(lql[ind])
-                ind += 1
-        for item in comp:
-                for thing in item:
-                        newList.append(thing)
-        return newList"""
-
 def perspective(A,Z,l,div):
         sx = A[0]-Z[0]
         sx = sx/div
@@ -300,78 +274,6 @@ def rainbow(colorz):
         else:
                 return (c1,c2,c3)
         
-def order(lql,nqdes):
-        newList = []
-        averages = []
-        comp = []
-        #Create a list of averages
-        testingList = []
-        this = []
-        that = []
-        thing = []
-        for pol in lql:
-                myList = 0
-                for indice in pol:
-                        
-                        #First rotate the Z-coordinate around the X-axis
-                        rotnot = nqdes[indice]
-                        thing.append(rotnot[2])
-                        #rotnot[1] -= ms2
-                        #rotnot[0] -= ms1
-                        #Znot = statRot(rotnot)[2]
-                        #drawNode = staticRotateX3D(rotnot,rotateX)
-                        #drawNode2 = staticRotateY3D(drawNode,rotateY)
-                        #rotnot = staticRotateZ3D(drawNode2,rotateZ)
-                        #rotnot[0] += ms1
-                        #rotnot[1] += ms2
-                        
-                        rad = rotateX * math.pi / 180
-                        cosa = math.cos(rad)
-                        sina = math.sin(rad)
-                        x = rotnot[0]-ms1
-                        y = rotnot[1]-ms2
-                        z = rotnot[2]
-                        Znode = [x+ms1, y * cosa - z * sina + ms2, y*sina+z*cosa]
-                        that.append(Znode)
-
-                        #Then rotate the Z-coordinate around the Y-axis
-                        rad = rotateY * math.pi / 180
-                        cosa = math.cos(rad)
-                        sina = math.sin(rad)
-                        j = Znode[0]-ms1
-                        k = Znode[1]-ms2
-                        l = Znode[2]
-                        Znot = l * cosa - j * sina
-                        myList += Znot
-                        this.append(Znot)
-
-                
-                #Divide by the length of the list to find the average
-                myList /= len(pol)
-                averages.append(myList)
-                #Append placeholders to empty list (these placeholders will be needed later)
-                comp.append([])
-        text("Ordering after Y coors: " + str(this),(ms1,ms2+90),PINK)
-        text("Order before Y coors: " + str(that), (ms1,ms2+60), ORANGE)
-        text("Order base Z coors: " + str(thing), (ms1,ms2+150),YELLOW)
-        #text("The first rotation with ordering brings: " + str(that), (100,ms2+120),BLACK)
-        #Compare averages and rank accordingly
-        ind = 0
-        for average in averages:
-                rank = 0
-                for average2 in averages:
-                        if average > average2:
-                                rank += 1
-                #Append the node indice corresponding to the current average in the list selecting the placeholder by its rank
-                comp[rank].append(lql[ind])
-                ind += 1
-        #Remove troublemaking brackets from the list
-        for item in comp:
-                for thing in item:
-                        newList.append(thing)
-        #We're done!
-        text(str(lql) + " was changed to " + str(newList),(ms1,ms2),RED)
-        return newList
         
 #Buttons
 row1 = pygame.Rect(0,0,80,30)
@@ -458,11 +360,6 @@ while True:
                 if n == True:
                         text(str(i),(node[0],node[1]),BLACK)
                 i += 1
-
-        #pygame.time.wait(25)
-
-        if shouldOrder == True:
-                lol = order(lol,nodes)
         
         #Draw pols
         s = 1
@@ -632,5 +529,3 @@ while True:
                         if event.key == K_DOWN and edit > 0:
                                 edit -= 1
                                 buttonLoc[0] = nodes[edit][2]
-                        if event.key == ord("o"):
-                                shouldOrder = not shouldOrder
