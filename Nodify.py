@@ -300,78 +300,6 @@ def rainbow(colorz):
         else:
                 return (c1,c2,c3)
         
-def order(lql,nqdes):
-        newList = []
-        averages = []
-        comp = []
-        #Create a list of averages
-        testingList = []
-        this = []
-        that = []
-        thing = []
-        for pol in lql:
-                myList = 0
-                for indice in pol:
-                        
-                        #First rotate the Z-coordinate around the X-axis
-                        rotnot = nqdes[indice]
-                        thing.append(rotnot[2])
-                        #rotnot[1] -= ms2
-                        #rotnot[0] -= ms1
-                        #Znot = statRot(rotnot)[2]
-                        #drawNode = staticRotateX3D(rotnot,rotateX)
-                        #drawNode2 = staticRotateY3D(drawNode,rotateY)
-                        #rotnot = staticRotateZ3D(drawNode2,rotateZ)
-                        #rotnot[0] += ms1
-                        #rotnot[1] += ms2
-                        
-                        rad = rotateX * math.pi / 180
-                        cosa = math.cos(rad)
-                        sina = math.sin(rad)
-                        x = rotnot[0]-ms1
-                        y = rotnot[1]-ms2
-                        z = rotnot[2]
-                        Znode = [x+ms1, y * cosa - z * sina + ms2, y*sina+z*cosa]
-                        that.append(Znode)
-
-                        #Then rotate the Z-coordinate around the Y-axis
-                        rad = rotateY * math.pi / 180
-                        cosa = math.cos(rad)
-                        sina = math.sin(rad)
-                        j = Znode[0]-ms1
-                        k = Znode[1]-ms2
-                        l = Znode[2]
-                        Znot = l * cosa - j * sina
-                        myList += Znot
-                        this.append(Znot)
-
-                
-                #Divide by the length of the list to find the average
-                myList /= len(pol)
-                averages.append(myList)
-                #Append placeholders to empty list (these placeholders will be needed later)
-                comp.append([])
-        text("Ordering after Y coors: " + str(this),(ms1,ms2+90),PINK)
-        text("Order before Y coors: " + str(that), (ms1,ms2+60), ORANGE)
-        text("Order base Z coors: " + str(thing), (ms1,ms2+150),YELLOW)
-        #text("The first rotation with ordering brings: " + str(that), (100,ms2+120),BLACK)
-        #Compare averages and rank accordingly
-        ind = 0
-        for average in averages:
-                rank = 0
-                for average2 in averages:
-                        if average > average2:
-                                rank += 1
-                #Append the node indice corresponding to the current average in the list selecting the placeholder by its rank
-                comp[rank].append(lql[ind])
-                ind += 1
-        #Remove troublemaking brackets from the list
-        for item in comp:
-                for thing in item:
-                        newList.append(thing)
-        #We're done!
-        text(str(lql) + " was changed to " + str(newList),(ms1,ms2),RED)
-        return newList
         
 #Buttons
 row1 = pygame.Rect(0,0,80,30)
@@ -458,11 +386,6 @@ while True:
                 if n == True:
                         text(str(i),(node[0],node[1]),BLACK)
                 i += 1
-
-        #pygame.time.wait(25)
-
-        if shouldOrder == True:
-                lol = order(lol,nodes)
         
         #Draw pols
         s = 1
@@ -481,23 +404,15 @@ while True:
                 s += 1
                 
         #Draw nodes
-        zzz = []
-        for node in nodes:
-                zzz.append(node[2])
-        text("The BASE nodes list Zs are currently: " + str(zzz),(ms1,ms2-30),BLACK)
-        dLol = []
-        well = []
         i = 1
         for drawNode in nodes:
                 #Make sure the nodes are rotated around the center of the screen
                 drawNode = [drawNode[0]-ms1,drawNode[1]-ms2,drawNode[2]]
                 #Rotate the nodes
                 drawNode = staticRotateX3D(drawNode,rotateX)
-                well.append(drawNode[2])
                 drawNode = staticRotateY3D(drawNode,rotateY)
                 drawNode = staticRotateZ3D(drawNode,rotateZ)
                 #statRot(drawNode)
-                dLol.append(drawNode[2])
                 #Put the nodes in the right format
                 drawNode = [drawNode[0]+ms1,drawNode[1]+ms2,drawNode[2]]
                 #Normally draw nodes
@@ -512,7 +427,6 @@ while True:
                 #elif i == edit+1 and (subMode == 1 or (mode == 1 and subMode == 3)) and blink == False and mode != 5:
                 #        pygame.draw.circle(screen,(255,0,0),(int(drawNode[0]),int(drawNode[1])),nodeSize)
                 i += 1
-        text("Before Y Z-coors: "+str(well), (ms1,ms2+120),PURPLE)
         
         #SUB MODE DRAWING RECTANGLES
         if mode == 1 and subMode == 1:
@@ -555,8 +469,7 @@ while True:
                 if indice2 < len(bcs[mode-1]):
                         indice2 += 1
 
-        text("The drawn ROTATED Z-coordinates are: " + str(dLol),(ms1,ms2+30),BLACK)
-        
+
         pygame.draw.rect(screen,(0,255,255),pygame.Rect((mode-1)*80,30,80,5))
                 
         pygame.display.update()
@@ -631,6 +544,4 @@ while True:
                                 buttonLoc[0] = nodes[edit][2]
                         if event.key == K_DOWN and edit > 0:
                                 edit -= 1
-                                buttonLoc[0] = nodes[edit][2]
-                        if event.key == ord("o"):
-                                shouldOrder = not shouldOrder
+                                buttonLoc[0] = nodes[edit][2]  
