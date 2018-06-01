@@ -1,4 +1,3 @@
-xx = 1
 import pygame, math, random
 from pygame.locals import *
 pygame.init()
@@ -22,7 +21,7 @@ pygame.display.set_caption("Nodify")
 connecting = False
 n = False
 rain = True
-polColors = [[0,255,0],[255,0,0],[0,0,255],[255,0,255],[255,255,0],[0,255,255],[255,255,255],[0,0,0]]
+polColors = []
 mult = 1
 holding = 0
 useRadian = False
@@ -37,15 +36,14 @@ blinking = 0
 blink = False
 n10 = False
 lowerCount = 100
-shouldOrder = False
 polEdit = 0
 mode = 1
 subMode = 0
 buttonLoc = [0]
 lon = []
 dLol = []
-nodes = [[500-75,560,-50],[500-75,500-60,-50],[575,500-60,-50],[575,560,-50],[560,575,50],[500-60,575,50],[500-60,500-75,50],[560,500-75,50]]
-lol = [[0,1,2,3],[4,5,6,7]]
+nodes = []
+lol = []
 addRect = pygame.Rect(winW-200, winY-200,100,100)
 
 #COLORS:
@@ -235,32 +233,6 @@ def statRot(node):
         node4 = staticRotateZ3D(node2,rotateZ)
         return node4
 
-"""def order(lql, nqdes):
-        newList = []
-        averages = []
-        comp = []
-        #Create a list of averages
-        for pol in lql:
-                myList = 0
-                for indice in pol:
-                        myList += nqdes[indice][2]
-                myList /= len(pol)
-                averages.append(myList)
-                comp.append([])
-        #Determine rank
-        ind = 0
-        for average in averages:
-                rank = 0
-                for average2 in averages:
-                        if average > average2:
-                                rank += 1
-                comp[rank].append(lql[ind])
-                ind += 1
-        for item in comp:
-                for thing in item:
-                        newList.append(thing)
-        return newList"""
-
 def perspective(A,Z,l,div):
         sx = A[0]-Z[0]
         sx = sx/div
@@ -301,10 +273,11 @@ def rainbow(colorz):
         else:
                 return (c1,c2,c3)
         
-def order(lql,nqdes):
+def order(lql,nqdes,polCqlors):
         newList = []
         averages = []
         comp = []
+        compCol = []
         #Create a list of averages
         for pol in lql:
                 myList = 0
@@ -338,6 +311,7 @@ def order(lql,nqdes):
                 averages.append(myList)
                 #Append placeholders to empty list (these placeholders will be needed later)
                 comp.append([])
+                compCol.append([])
                 
         #text("The first rotation with ordering brings: " + str(that), (100,ms2+120),BLACK)
         #Compare averages and rank accordingly
@@ -349,14 +323,18 @@ def order(lql,nqdes):
                                 rank += 1
                 #Append the node indice corresponding to the current average in the list selecting the placeholder by its rank
                 comp[rank].append(lql[ind])
+                compCol[rank].append(polCqlors[ind])
                 ind += 1
-        #Remove troublemaking brackets from the list
+        #Remove troublemaking brackets from the lists
         for item in comp:
                 for thing in item:
                         newList.append(thing)
+        newListCol = []
+        for item in compCol:
+                for thing in item:
+                        newListCol.append(thing)
         #We're done!
-        text(str(lql) + " was changed to " + str(newList),(ms1,ms2),RED)
-        return newList
+        return [newList,newListCol]
         
 #Buttons
 row1 = pygame.Rect(0,0,80,30)
@@ -443,15 +421,16 @@ while True:
                 if n == True:
                         text(str(i),(node[0],node[1]),BLACK)
                 i += 1
-
-        #pygame.time.wait(25)
-
-        if shouldOrder == True:
-                lol = order(lol,nodes)
+        
+        prelist = order(lol,nodes,polColors)
+        lol = prelist[0]
+        polColors = prelist[1]
         
         #Draw pols
+        tester = []
         s = 1
         for l in lol:
+                tester.append(l)
                 #For each polygon, make a list containing the nodes...
                 newL = []
                 for coor in l:
@@ -462,9 +441,9 @@ while True:
                 #And then draw a polygon with that list of nodes.
                 if s == polEdit+1 and blink == False and mode == 2:
                         pygame.draw.polygon(screen,BLACK,newL,4)
-                pygame.draw.polygon(screen,polColors[s],newL)
+                pygame.draw.polygon(screen,polColors[s-1],newL)
                 s += 1
-                
+        
         #Draw nodes
         i = 1
         for drawNode in nodes:
@@ -474,7 +453,6 @@ while True:
                 drawNode = staticRotateX3D(drawNode,rotateX)
                 drawNode = staticRotateY3D(drawNode,rotateY)
                 drawNode = staticRotateZ3D(drawNode,rotateZ)
-                #statRot(drawNode)
                 
                 #Put the nodes in the right format
                 drawNode = [drawNode[0]+ms1,drawNode[1]+ms2,drawNode[2]]
@@ -583,6 +561,7 @@ while True:
                                 if len(lon) > 2:
                                         lol.append(lon)
                                         polEdit = len(lol)-1
+                                        polColors.append([random.randint(0,255),random.randint(0,255),random.randint(0,255)])
                                 lon = []
                         if mouseHovering(addRect) and mode == 2 and subMode == 1:
                                 lon.append(edit)
@@ -608,5 +587,3 @@ while True:
                         if event.key == K_DOWN and edit > 0:
                                 edit -= 1
                                 buttonLoc[0] = nodes[edit][2]
-                        if event.key == ord("o"):
-                                shouldOrder = not shouldOrder
