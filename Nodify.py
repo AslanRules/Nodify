@@ -34,9 +34,6 @@ pygame.time.wait(2000)
 lon = []
 lom = []
 nodeSize = 8
-rotateZ = 0
-rotateY = 0
-rotateX = 0
 row = 1
 paMethod = 1
 edit = 0
@@ -68,7 +65,7 @@ polEdit = 0
 mobEdit = 0
 mode = 1
 subMode = 0
-buttonLoc = [0,0,0,0,0,0]
+buttonLoc = [0,0,0,0,0,0,0]
 start = 0
 finish = 0
 programSpeed = 0
@@ -76,12 +73,18 @@ should = 0
 cannot = pygame.Rect(winW-150, winY-125,100,75)
 error = False
 errorCount = 0
+plane = 0
+speedList = []
+itera = 0
+speedAverage = 0
+speedColor = (0,255,0)
 
 #Remember, each of these lists have frame sublists. 
 fNodes = [[]]
 fLol = [[]]
 fPolColors = [[]]
 fMobs = [[]]
+fRots = [[0,0,0]]
 f = 0
 
 addRect = pygame.Rect(winW-200, winY-200,100,100)
@@ -118,8 +121,8 @@ def readFile(fileName):
         dude.close()
         #You're gonna use a string and copy each number to a new list.
         #Make a list with the numbers in the string
-        #Nodes, Pols, Colors, Mobs, Anims, Views
-        newFile = [[[[]]],[[[]]],[[[]]],[[[]]],[[[]]],[[[]]]]
+        #Nodes, Pols, Colors, Mobs, Rots, Anims, Views
+        newFile = [[[[]]],[[[]]],[[[]]],[[[]]],[[[]]],[[[]]],[[[]]]]
         stage = 0
         frameStage = 0
         elemist = 0
@@ -250,6 +253,10 @@ def createVideo():
 
         #Warning and What to Do
         screen.fill(WHITE)
+        pygame.draw.line(screen, (0,255,1), (0,0),(winW,0))
+        pygame.draw.line(screen, (0,255,1), (0,0),(0,winY))
+        pygame.draw.line(screen, (0,255,1), (0,winY-1),(winW,winY-1))
+        pygame.draw.line(screen, (0,255,1), (winW-1,0),(winW-1,winY))
         text("Please center the window without any edges cut off. Saving your (.png) frames to the same directory as Nodify. Prepare for screenshot in 5 seconds!",(ms1-500,ms2),BLUE)
         pygame.display.update()
         pygame.time.wait(500)
@@ -278,6 +285,10 @@ def createVideo():
                         #And then draw a polygon with that list of nodes.
                         pygame.draw.polygon(screen,fPolColors[f][s-1],newL)
                         s += 1
+                pygame.draw.line(screen, (0,255,1), (0,0),(winW,0))
+                pygame.draw.line(screen, (0,255,1), (0,0),(0,winY))
+                pygame.draw.line(screen, (0,255,1), (0,winY-1),(winW,winY-1))
+                pygame.draw.line(screen, (0,255,1), (winW-1,0),(winW-1,winY))
                 pygame.display.update()
                 with mss() as sct:
                         sct.shot()
@@ -372,7 +383,6 @@ def rotateX3D(angle):
                 drawNodes[indice][2] = y * sina + z * cosa
                 indice += 1
 def staticRotateX3D(node,angle):
-        hoho = []
         if useRadian == True:
                 rad = angle * math.pi / 180
         else:
@@ -388,9 +398,9 @@ def staticRotateX3D(node,angle):
         return [node[0],node[1],node[2]]
 
 def statRot(node):
-        node2 = staticRotateX3D(node,rotateX)
-        node3 = staticRotateY3D(node2,rotateY)
-        node4 = staticRotateZ3D(node2,rotateZ)
+        node2 = staticRotateX3D(node,fRots[f][0])
+        node3 = staticRotateY3D(node2,fRots[f][1])
+        node4 = staticRotateZ3D(node2,fRots[f][2])
         return node4
 
 def perspective(A,Z,l,div):
@@ -446,20 +456,20 @@ def order(lql,nqdes,polCqlors):
                         #First rotate the Z-coordinate around the X-axis
                         rotnot = nqdes[indice]                        
                         #Znot = statRot(rotnot)[2]
-                        #drawNode = staticRotateX3D(rotnot,rotateX)
-                        #drawNode2 = staticRotateY3D(drawNode,rotateY)
-                        #rotnot = staticRotateZ3D(drawNode2,rotateZ)
+                        #drawNode = staticRotateX3D(rotnot,fRots[f][0])
+                        #drawNode2 = staticRotateY3D(drawNode,fRots[f][1])
+                        #rotnot = staticRotateZ3D(drawNode2,fRots[f][2])
                         
-                        cosa = math.cos(rotateX)
-                        sina = math.sin(rotateX)
+                        cosa = math.cos(fRots[f][0])
+                        sina = math.sin(fRots[f][0])
                         x = rotnot[0]-ms1
                         y = rotnot[1]-ms2
                         z = rotnot[2]
                         Znode = [x+ms1, y * cosa - z * sina + ms2, y*sina+z*cosa]
 
                         #Then rotate the Z-coordinate around the Y-axis
-                        cosa = math.cos(rotateY)
-                        sina = math.sin(rotateY)
+                        cosa = math.cos(fRots[f][1])
+                        sina = math.sin(fRots[f][1])
                         j = Znode[0]-ms1
                         k = Znode[1]-ms2
                         l = Znode[2]
@@ -560,9 +570,9 @@ while True:
                 screen.fill(screenColor)
 
         if error == True:
-                if errorCount < 50:
+                if errorCount < 200:
                         errorCount += 1
-                elif errorCount == 50:
+                elif errorCount == 200:
                         error = False
                         errorCount = 0
 
@@ -575,6 +585,8 @@ while True:
         rScrollbar = cScrollbar(winW-100,3,RED)
         gScrollbar = cScrollbar(winW-75,4,(0,255,0))
         bScrollbar = cScrollbar(winW-50,5,BLUE)
+
+        pScrollbar = scrollbar(winW-75,6,BLUE)
         
 
         blinking += 1
@@ -625,9 +637,9 @@ while True:
                 #Make sure the nodes are rotated around the center of the screen
                 drawNode = [drawNode[0]-ms1,drawNode[1]-ms2,drawNode[2]]
                 #Rotate the nodes
-                drawNode = staticRotateX3D(drawNode,rotateX)
-                drawNode = staticRotateY3D(drawNode,rotateY)
-                drawNode = staticRotateZ3D(drawNode,rotateZ)
+                drawNode = staticRotateX3D(drawNode,fRots[f][0])
+                drawNode = staticRotateY3D(drawNode,fRots[f][1])
+                drawNode = staticRotateZ3D(drawNode,fRots[f][2])
                 
                 #Put the nodes in the right format
                 drawNode = [drawNode[0]+ms1,drawNode[1]+ms2,drawNode[2]]
@@ -654,6 +666,8 @@ while True:
         #SUB MODE DRAWING RECTANGLES/SCROLLBARS
         if mode == 1 and subMode == 1:
                 pygame.draw.rect(screen,GREEN,bRect1)
+                pScrollbar.draw()
+                text(str(plane),(winW-80,75),BLUE)
         if mode == 5 and subMode == 1:
                 pygame.draw.rect(screen,PURPLE,bRect1)
         if mode == 2 and subMode == 1:
@@ -702,9 +716,19 @@ while True:
                 if indice2 < len(bcs[mode-1]):
                         indice2 += 1
         
+        if speedAverage <= 75:
+                speedColor = GREEN
+        elif speedAverage <= 126:
+                speedColor = ((speedAverage-75)*5,255,0)
+        elif speedAverage <= 177:
+                speedColor = (255,speedAverage-126,0)
+        else:
+                speedColor = (255,0,0)
+        
         pygame.draw.rect(screen,(0,255,255),pygame.Rect((mode-1)*80,30,80,5))
-
-        text(str(programSpeed),(10,winY-30),BLACK)
+        pygame.draw.rect(screen,speedColor,pygame.Rect(8,winY-27,speedAverage,20))
+        
+        text("Speed: " + str(speedAverage),(10,winY-30),BLACK)
 
         if error == True:
                 pygame.draw.rect(screen, (240,10,10), cannot)
@@ -720,9 +744,8 @@ while True:
                 if event.type == MOUSEMOTION:
                         if rotating == True and subMode == 1 and mode == 5:
                                 pos = event.rel
-                                rotateX += pos[1]*.005
-                                rotateY += pos[0]*.005
-                        error = True
+                                fRots[f][0] += pos[1]*.005
+                                fRots[f][1] += pos[0]*.005
 
                         #SCROLLBAR MOVING:
                         if holding == 1:
@@ -744,12 +767,16 @@ while True:
                         if holding == 6 and (fPolColors[f][polEdit][2] + event.rel[1]) >= 0 and (fPolColors[f][polEdit][2] + event.rel[1]) <= 255:
                                 buttonLoc[5] += event.rel[1]
                                 fPolColors[f][polEdit][2] += event.rel[1]
+                        if holding == 7 and (plane+(event.rel[1]*5) >= -500) and (plane+(event.rel[1]*5) <= 500):
+                                plane += event.rel[1] * 5
+                                buttonLoc[6] += event.rel[1]
+
                                 
                 if event.type == MOUSEBUTTONDOWN:
                         
                         #testVar = clickingButton()
-                        if mode == 1 and subMode == 1 and not mouseHovering(bRect1): #and (not testVar):
-                                fNodes[f].append([event.pos[0],event.pos[1],0])
+                        if mode == 1 and subMode == 1 and not mouseHovering(bRect1) and not mouseHovering(pScrollbar.button): #and (not testVar):
+                                fNodes[f].append([event.pos[0],event.pos[1],plane])
                                 edit = len(fNodes[f])-1
                         
                         indice = 1
@@ -796,6 +823,7 @@ while True:
                                 fNodes.append([])
                                 fPolColors.append([])
                                 fMobs.append([])
+                                fRots.append([0,0,0])
                                 f = len(fLol)-1
                                 edit = 0
                                 polEdit = 0
@@ -881,8 +909,17 @@ while True:
                                                 for node in frame:
                                                         WfMobs = WfMobs + str(node)
                                                 i += 1
+
+                                        WfRots = ""
+                                        i = 0
+                                        for frame in fRots:
+                                                if i != 0:
+                                                        WfRots = WfRots + "^"
+                                                for node in frame:
+                                                        WfRots = WfRots + str(node)
+                                                i += 1
                                         
-                                        savedAsFile.write(WfNodes+'*'+WfLol+'*'+WfPolColors+"*"+WfMobs)
+                                        savedAsFile.write(WfNodes+'*'+WfLol+'*'+WfPolColors+"*"+WfMobs + "*" + WfRots)
 
                                         #savedAsFile.write(WfNodes)
                         if mouseHovering(bRect3) and mode == 6:
@@ -893,6 +930,7 @@ while True:
                                         fLol = the_file[1]
                                         fPolColors = the_file[2]
                                         fMobs = the_file[3]
+                                        fRots = the_file[4]
                                         editedF = 1
                                 except:
                                         pass
@@ -917,6 +955,7 @@ while True:
                                         fLol = the_file[1]
                                         fPolColors = the_file[2]
                                         fMobs = the_file[3]
+                                        fRots = the_file[4]
                                         editedF -= 1
                                 except:
                                         pass
@@ -928,6 +967,7 @@ while True:
                                         fLol = the_file[1]
                                         fPolColors = the_file[2]
                                         fMobs = the_file[3]
+                                        fRots = the_file[4]
                                         editedF += 1
                                 except:
                                         pass
@@ -971,8 +1011,17 @@ while True:
                                                 for node in frame:
                                                         WfMobs = WfMobs + str(node)
                                                 i += 1
+                                                
+                                        WfRots = ""
+                                        i = 0
+                                        for frame in fRots:
+                                                if i != 0:
+                                                        WfRots = WfRots + "^"
+                                                for node in frame:
+                                                        WfRots = WfRots + str(node)
+                                                i += 1
                                         
-                                        savedAsFile.write(WfNodes+'*'+WfLol+'*'+WfPolColors+"*"+WfMobs)
+                                        savedAsFile.write(WfNodes+'*'+WfLol+'*'+WfPolColors+"*"+WfMobs + "*" + WfRots)
                                 
                         #SCROLLBAR CLICKING BUTTONS
                         if mouseHovering(xScrollbar.button) and mode == 1 and subMode == 3:
@@ -987,6 +1036,8 @@ while True:
                                 holding = 5
                         if mouseHovering(bScrollbar.button) and mode == 2 and subMode == 4:
                                 holding = 6
+                        if mouseHovering(pScrollbar.button) and mode == 1 and subMode == 1:
+                                holding = 7
                         
                 if event.type == MOUSEBUTTONUP:
                         clicking = False
@@ -1022,6 +1073,16 @@ while True:
                                 buttonLoc[5] = fPolColors[f][polEdit][2]
                         elif event.key == K_DOWN and mobEdit > 0 and mode == 3:
                                 mobEdit -= 1
+        
         if should == 5:
                 finish = pygame.time.get_ticks()
-                programSpeed = finish-start
+                speedList.append(finish-start)
+                if itera == 25:
+                        speedAverage = 0
+                        for num in speedList:
+                                speedAverage += num
+                        speedAverage = speedAverage/25
+                        speedList = []
+                        itera = 0
+                else:
+                        itera += 1
