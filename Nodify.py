@@ -6,6 +6,10 @@ The project to give the power of simple 3D animation to everyone."""
 
 import pygame, math, random, time, os
 try:
+        import copy
+except:
+        pass
+try:
         from mss import mss
         screenshot = True
 except:
@@ -505,6 +509,8 @@ def order(lql,nqdes,polCqlors):
                         newListCol.append(thing)
         #We're done!
         return [newList,newListCol]
+
+"""#########################################   BUTTONS   ########################################################"""
         
 #Buttons
 row1 = pygame.Rect(0,0,80,30)
@@ -543,8 +549,8 @@ bRow5 = ['Rotate','Scale','Glide']
 bc5 = [PURPLE,ORANGE,CYAN]
 bRow6 = ['Save','Save As','Open','Previous','Next']
 bc6 = [RED,BLUE,PURPLE,GREEN,ORANGE]
-bRow7 = ['Previous','Next','Add','Delete','Display']
-bc7 = [BLUE,PURPLE,GREEN,RED,PINK]
+bRow7 = ['Previous','Next','Add','Delete','Display','Dupe']
+bc7 = [BLUE,PURPLE,GREEN,RED,PINK,YELLOW]
 bRow8 = [] #Used to be "Show" ['Timing','Make!']
 bc8 = [GREEN,PURPLE,RED,PINK]
 bRows = [bRow1,bRow2,bRow3,bRow4,bRow5,bRow6,bRow7,bRow8]
@@ -688,6 +694,8 @@ while True:
         if mode == 3 and subMode == 1:
                 pygame.draw.rect(screen,BLUE,bRect1)
                 pygame.draw.rect(screen,BLUE,addRect)
+        if mode == 7:
+                text("Frame: " + str(f+1), (5,25),BLACK)
                 
         #Draw Main Menu
         indice = 0
@@ -727,6 +735,10 @@ while True:
         
         pygame.draw.rect(screen,(0,255,255),pygame.Rect((mode-1)*80,30,80,5))
         pygame.draw.rect(screen,speedColor,pygame.Rect(8,winY-27,speedAverage,20))
+        if should > 5:
+                pygame.draw.rect(screen, (0,0,255), pygame.Rect(8, winY-27,speedAverage,20),1)
+        else:
+                pygame.draw.rect(screen, (255,255,0),pygame.Rect(8, winY-27,speedAverage,20),1)
         
         text("Speed: " + str(speedAverage),(10,winY-30),BLACK)
 
@@ -840,9 +852,10 @@ while True:
                                 buttonLoc[0] = fNodes[f][edit][0] / 5
                                 buttonLoc[1] = fNodes[f][edit][1] / 5
                                 buttonLoc[2] = fNodes[f][edit][2] / 5
-                                buttonLoc[3] = fPolColors[f][polEdit][0]
-                                buttonLoc[4] = fPolColors[f][polEdit][1]
-                                buttonLoc[5] = fPolColors[f][polEdit][2]
+                                if len(fPolColors[f]) > 0:
+                                        buttonLoc[3] = fPolColors[f][polEdit][0]
+                                        buttonLoc[4] = fPolColors[f][polEdit][1]
+                                        buttonLoc[5] = fPolColors[f][polEdit][2]
                         if mouseHovering(bRect1) and mode == 7 and f > 0:
                                 f -= 1
                                 edit = 0
@@ -850,9 +863,10 @@ while True:
                                 buttonLoc[0] = fNodes[f][edit][0] / 5
                                 buttonLoc[1] = fNodes[f][edit][1] / 5
                                 buttonLoc[2] = fNodes[f][edit][2] / 5
-                                buttonLoc[3] = fPolColors[f][polEdit][0]
-                                buttonLoc[4] = fPolColors[f][polEdit][1]
-                                buttonLoc[5] = fPolColors[f][polEdit][2]
+                                if len(fPolColors[f]) > 0:
+                                        buttonLoc[3] = fPolColors[f][polEdit][0]
+                                        buttonLoc[4] = fPolColors[f][polEdit][1]
+                                        buttonLoc[5] = fPolColors[f][polEdit][2]
                         if mouseHovering(bRect2) and mode == 6:
                                 
                                 #fNodes = [ frames [ nodes [x, y, z] ] ]
@@ -937,6 +951,35 @@ while True:
                         if mouseHovering(row8) and screenshot == True:
                                 createVideo()
 
+                        if mouseHovering(bRect6) and mode == 7:
+                                #Make dupe
+                                nNodes = []
+                                nLol = []
+                                nPolColors = []
+                                nRots = []
+                                nMobs = []
+
+                                for thing in fNodes[f]:
+                                        nNodes.append(copy.copy(thing))
+                                for thing in fLol[f]:
+                                        nLol.append(copy.copy(thing))
+                                for thing in fPolColors[f]:
+                                        nPolColors.append(copy.copy(thing))
+                                for thing in fRots[f]:
+                                        nRots.append(copy.copy(thing))
+                                for thing in fMobs[f]:
+                                        nMobs.append(copy.copy(thing))
+
+                                fNodes.append(copy.copy(nNodes))
+                                fLol.append(copy.copy(nLol))
+                                fPolColors.append(copy.copy(nPolColors))
+                                fRots.append(copy.copy(nRots))
+                                fMobs.append(copy.copy(nMobs))
+                                
+                                f = len(fNodes)-1
+                                edit = 0
+                                polEdit = 0
+                                
                         if mouseHovering(bRect1) and mode == 3 and subMode != 1:
                                 subMode = 1
                         elif mouseHovering(bRect1) and mode == 3 and subMode == 1:
@@ -1077,11 +1120,11 @@ while True:
         if should == 5:
                 finish = pygame.time.get_ticks()
                 speedList.append(finish-start)
-                if itera == 25:
+                if itera == 10:
                         speedAverage = 0
                         for num in speedList:
                                 speedAverage += num
-                        speedAverage = speedAverage/25
+                        speedAverage = speedAverage/10
                         speedList = []
                         itera = 0
                 else:
