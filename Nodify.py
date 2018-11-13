@@ -1,7 +1,20 @@
 """Nodify Beta Version - Still in Development
 The project to give the power of simple 3D animation to everyone."""
 
-#TO ADD: display lists, opening files, cancel and delete buttons, splitting polygons, automobs, color coding nodes/mobs, selecting nodes (and pols?), editing stuff, speed indicator
+#TO ADD:
+"""
+Hovering Nodes? Grid Planes? Auto Temp Rot?
+Gliding, scaling
+Moving mobs
+Select squares
+Display lists
+Deleting nodes/pols/mobs
+Splitting polygons
+Automobs
+Color coding nodes/mobs
+Selecting nodes (and pols?)
+Editing stuff
+"""
 
 
 import pygame, math, random, time, os
@@ -33,7 +46,7 @@ pygame.draw.rect(screen, (255,0,0), pygame.Rect(ms1+66, ms2-100, 34, 200))
 pygame.draw.circle(screen, (0,75,255), (ms1-33,ms2+75), 40)
 
 pygame.display.update()
-pygame.time.wait(2000)
+pygame.time.wait(1000)
 
 lon = []
 lom = []
@@ -69,7 +82,7 @@ polEdit = 0
 mobEdit = 0
 mode = 1
 subMode = 0
-buttonLoc = [0,0,0,0,0,0,0]
+buttonLoc = [0,0,0,0,0,0,0,0,0,0]
 start = 0
 finish = 0
 programSpeed = 0
@@ -82,6 +95,9 @@ speedList = []
 itera = 0
 speedAverage = 0
 speedColor = (0,255,0)
+nudgerTwo = pygame.Rect(50, winY-100, 100, 25)
+nudgerOne = pygame.Rect(50, winY-68, 100, 25)
+nudgeColor = pygame.Rect(50, winY-130, 100, 25)
 
 #Remember, each of these lists have frame sublists. 
 fNodes = [[]]
@@ -90,7 +106,10 @@ fPolColors = [[]]
 fMobs = [[]]
 fRots = [[0,0,0]]
 f = 0
+nud = "Not"
 
+delRect = pygame.Rect(winW-200, winY-85, 48, 50)
+cancelRect = pygame.Rect(winW-148, winY-85, 48, 50)
 addRect = pygame.Rect(winW-200, winY-200,100,100)
 
 #COLORS:
@@ -205,6 +224,30 @@ class cScrollbar(object):
         def draw(self):
                 pygame.draw.rect(screen,self.color,self.backRect)
                 pygame.draw.rect(screen,BLACK,self.button)
+
+def nudcud(thing):
+        if thing == "Na":
+                return BLUE
+        if thing == "Ne1":
+                return YELLOW
+        if thing == "Ne2":
+                return GREEN
+        if thing == "Ne3":
+                return BLUE
+        if thing == "Nc1":
+                return RED
+        if thing == "Nc2":
+                return (0,255,0)
+        if thing == "Nc3":
+                return BLUE
+        if thing == "Nr1":
+                return ORANGE
+        if thing == "Nr2":
+                return YELLOW
+        if thing == "Nr3":
+                return GREEN
+        else:
+                return BLACK
                 
 def text(message,pos,c):
         if type(message) != "string":
@@ -254,25 +297,6 @@ def mouseHovering(rect):
 
 def createVideo():
         #^^ Line 200 ^^     (you can use alt-G)
-
-        #Warning and What to Do
-        screen.fill(WHITE)
-        pygame.draw.line(screen, (0,255,1), (0,0),(winW,0))
-        pygame.draw.line(screen, (0,255,1), (0,0),(0,winY))
-        pygame.draw.line(screen, (0,255,1), (0,winY-1),(winW,winY-1))
-        pygame.draw.line(screen, (0,255,1), (winW-1,0),(winW-1,winY))
-        text("Please center the window without any edges cut off. Saving your (.png) frames to the same directory as Nodify. Prepare for screenshot in 5 seconds!",(ms1-500,ms2),BLUE)
-        pygame.display.update()
-        pygame.time.wait(500)
-        pygame.time.wait(500)
-        pygame.time.wait(500)
-        pygame.time.wait(500)
-        pygame.time.wait(500)
-        pygame.time.wait(500)
-        pygame.time.wait(500)
-        pygame.time.wait(500)
-        pygame.time.wait(500)
-        pygame.time.wait(500)
         f = 0
         for frame in fLol:
                 screen.fill(WHITE)
@@ -594,7 +618,10 @@ while True:
 
         pScrollbar = scrollbar(winW-75,6,BLUE)
         
-
+        roxScrollbar = scrollbar(winW-100,7, ORANGE)
+        royScrollbar = scrollbar(winW-75,8, YELLOW)
+        rozScrollbar = scrollbar(winW-50,9, GREEN)
+        
         blinking += 1
         if blinking > 100:
                 blinking = 0
@@ -696,7 +723,27 @@ while True:
                 pygame.draw.rect(screen,BLUE,addRect)
         if mode == 7:
                 text("Frame: " + str(f+1), (5,25),BLACK)
-                
+        if mode == 5 and subMode == 1:
+                roxScrollbar.draw()
+                royScrollbar.draw()
+                rozScrollbar.draw()
+                text(str(fRots[f][0]),(winW-100,40),ORANGE)
+                text(str(fRots[f][1]),(winW-75,60),YELLOW)
+                text(str(fRots[f][2]),(winW-50,80),GREEN)
+        if mode == 2 and subMode == 4:
+                pygame.draw.rect(screen, PURPLE, bRect4)
+        if (mode == 2 and subMode == 1) or (mode == 3 and subMode == 1):
+                pygame.draw.rect(screen, RED, delRect)
+                pygame.draw.rect(screen, PURPLE, cancelRect)
+                text("Del.", (winW-195,winY-75),BLACK)
+                text("Can.", (winW-143,winY-75), BLACK)
+        if (mode == 1 and (subMode == 1 or subMode == 3)) or (mode == 2 and subMode == 4) or (mode == 5 and subMode > 0):
+                pygame.draw.rect(screen, (20, 0, 250), nudgerOne)
+                pygame.draw.rect(screen, (80, 0, 210), nudgerTwo)
+                text("Nudge Up", (57, winY-95), WHITE)
+                text("Nudge Down", (57, winY-70), WHITE)
+                pygame.draw.rect(screen, nudcud(nud), nudgeColor)
+        
         #Draw Main Menu
         indice = 0
         for button in rows:
@@ -741,7 +788,7 @@ while True:
                 pygame.draw.rect(screen, (255,255,0),pygame.Rect(8, winY-27,speedAverage,20),1)
         
         text("Speed: " + str(speedAverage),(10,winY-30),BLACK)
-
+        
         if error == True:
                 pygame.draw.rect(screen, (240,10,10), cannot)
                 text("No can do!", (winW-140,winY-110),WHITE)
@@ -754,40 +801,56 @@ while True:
                         pygame.quit()
                         
                 if event.type == MOUSEMOTION:
-                        if rotating == True and subMode == 1 and mode == 5:
+                        #Click and Drag Rotation
+                        if rotating == True and subMode == 1 and mode == 5 and (holding < 8 or holding > 10):
                                 pos = event.rel
                                 fRots[f][0] += pos[1]*.005
                                 fRots[f][1] += pos[0]*.005
+                                buttonLoc[7] += pos[0]*.1
+                                buttonLoc[8] += pos[1]*.1
 
-                        #SCROLLBAR MOVING:
-                        if holding == 1:
+                        #NODE-EDIT SCROLLBARS:
+                        if holding == 1 and len(fNodes[f])>0:
                                 buttonLoc[0] += event.rel[1]
                                 fNodes[f][edit][0] += event.rel[1] * 5
-                        if holding == 2:
+                        if holding == 2 and len(fNodes[f])>0:
                                 buttonLoc[1] += event.rel[1]
                                 fNodes[f][edit][1] += event.rel[1] * 5
-                        if holding == 3:
+                        if holding == 3 and len(fNodes[f])>0:
                                 buttonLoc[2] += event.rel[1]
                                 fNodes[f][edit][2] += event.rel[1] * 5
-                        
-                        if holding == 4 and (fPolColors[f][polEdit][0] + event.rel[1]) >= 0 and (fPolColors[f][polEdit][0] + event.rel[1]) <= 255:
+                                
+                        #COLOR SCROLLBARS
+                        if holding == 4 and (fPolColors[f][polEdit][0] + event.rel[1]) >= 0 and (fPolColors[f][polEdit][0] + event.rel[1]) <= 255 and len(fPolColors[f])>0:
                                 buttonLoc[3] += event.rel[1]
                                 fPolColors[f][polEdit][0] += event.rel[1]
-                        if holding == 5 and (fPolColors[f][polEdit][1] + event.rel[1]) >= 0 and (fPolColors[f][polEdit][1] + event.rel[1]) <= 255:
+                        if holding == 5 and (fPolColors[f][polEdit][1] + event.rel[1]) >= 0 and (fPolColors[f][polEdit][1] + event.rel[1]) <= 255 and len(fPolColors[f])>0:
                                 buttonLoc[4] += event.rel[1]
                                 fPolColors[f][polEdit][1] += event.rel[1]
-                        if holding == 6 and (fPolColors[f][polEdit][2] + event.rel[1]) >= 0 and (fPolColors[f][polEdit][2] + event.rel[1]) <= 255:
+                        if holding == 6 and (fPolColors[f][polEdit][2] + event.rel[1]) >= 0 and (fPolColors[f][polEdit][2] + event.rel[1]) <= 255 and len(fPolColors[f])>0:
                                 buttonLoc[5] += event.rel[1]
                                 fPolColors[f][polEdit][2] += event.rel[1]
+
+                        #PLANE SCROLLBAR
                         if holding == 7 and (plane+(event.rel[1]*5) >= -500) and (plane+(event.rel[1]*5) <= 500):
                                 plane += event.rel[1] * 5
                                 buttonLoc[6] += event.rel[1]
-
+                        
+                        #ROTATION SCROLLBARS
+                        if holding == 8:# and rotateX+event.rel[1] >= 180 and rotateX+event.rel[1] <= -180 - wait no, the program uses radians:
+                                fRots[f][0] += event.rel[1]*.05
+                                buttonLoc[7] += event.rel[1]
+                        if holding == 9:# and rotateY+event.rel[1] >= 180 and rotateY+event.rel[1] <= -180:
+                                fRots[f][1] += event.rel[1]*.05
+                                buttonLoc[8] += event.rel[1]
+                        if holding == 10:# and rotateZ+event.rel[1] >= 180 and rotateZ+event.rel[1] <= -180:
+                                fRots[f][2] += event.rel[1]*.05
+                                buttonLoc[9] += event.rel[1]
                                 
                 if event.type == MOUSEBUTTONDOWN:
                         
                         #testVar = clickingButton()
-                        if mode == 1 and subMode == 1 and not mouseHovering(bRect1) and not mouseHovering(pScrollbar.button): #and (not testVar):
+                        if mode == 1 and subMode == 1 and not mouseHovering(bRect1) and not mouseHovering(pScrollbar.button) and not mouseHovering(nudgerOne) and not mouseHovering(nudgerTwo): #and (not testVar):
                                 fNodes[f].append([event.pos[0],event.pos[1],plane])
                                 edit = len(fNodes[f])-1
                         
@@ -797,13 +860,16 @@ while True:
                                         mode = indice
                                         subMode = 0
                                 indice += 1
+                        
                         if mouseHovering(bRect1) == True and mode == 1:
                                 if subMode != 1:
                                         subMode = 1
+                                        nud = "Na"
                                 elif subMode == 1:
                                         subMode = 0
                         if mouseHovering(bRect1) and mode == 5 and subMode != 1:
                                 subMode = 1
+                                nud = "Nr1"
                         elif mouseHovering(bRect1) and mode == 5 and subMode == 1:
                                 subMode = 0
                         if not mouseHovering(bRect1) and mode == 5 and subMode == 1:
@@ -822,12 +888,14 @@ while True:
                                 lon = []
                         if mouseHovering(addRect) and mode == 2 and subMode == 1:
                                 lon.append(edit)
-                        if mouseHovering(bRect3) and mode == 1 and subMode != 3:
+                        if mouseHovering(bRect3) and mode == 1 and subMode != 3 and len(fNodes[f]) > 0:
                                 subMode = 3
+                                nud = "Ne1"
                         elif mouseHovering(bRect3) and mode == 1 and subMode == 3:
                                 subMode = 0
                         if mouseHovering(bRect4) and mode == 2 and subMode != 4:
                                 subMode = 4
+                                nud = "Nc1"
                         elif mouseHovering(bRect4) and mode == 2 and subMode == 4:
                                 subMode = 0
                         if mouseHovering(bRect3) and mode == 7:
@@ -845,6 +913,9 @@ while True:
                                 buttonLoc[3] = 0
                                 buttonLoc[4] = 0
                                 buttonLoc[5] = 0
+                                buttonLoc[7] = 0
+                                buttonLoc[8] = 0
+                                buttonLoc[9] = 0
                         if mouseHovering(bRect2) and mode == 7 and f < len(fLol)-1:
                                 f += 1
                                 edit = 0
@@ -856,6 +927,9 @@ while True:
                                         buttonLoc[3] = fPolColors[f][polEdit][0]
                                         buttonLoc[4] = fPolColors[f][polEdit][1]
                                         buttonLoc[5] = fPolColors[f][polEdit][2]
+                                buttonLoc[7] = fRots[f][0]
+                                buttonLoc[8] = fRots[f][1]
+                                buttonLoc[9] = fRots[f][2]
                         if mouseHovering(bRect1) and mode == 7 and f > 0:
                                 f -= 1
                                 edit = 0
@@ -867,6 +941,100 @@ while True:
                                         buttonLoc[3] = fPolColors[f][polEdit][0]
                                         buttonLoc[4] = fPolColors[f][polEdit][1]
                                         buttonLoc[5] = fPolColors[f][polEdit][2]
+                                buttonLoc[7] = fRots[f][0]
+                                buttonLoc[8] = fRots[f][1]
+                                buttonLoc[9] = fRots[f][2]
+
+                        if mouseHovering(delRect) and mode == 2 and subMode == 1:
+                                lon.remove(lon[len(lon)-1])
+                        if mouseHovering(cancelRect) and mode == 2 and subMode == 1:
+                                lon = []
+                                subMode = 0
+
+                        if mouseHovering(nudgeColor):
+                                if nud == "Ne1" and mode == 1 and subMode == 3:
+                                        nud = "Ne2"
+                                elif nud == "Ne2" and mode == 1 and subMode == 3:
+                                        nud = "Ne3"
+                                elif nud == "Ne3" and mode == 1 and subMode == 3:
+                                        nud = "Ne1"
+                                elif nud == "Nc1" and mode == 2 and subMode == 4:
+                                        nud = "Nc2"
+                                elif nud == "Nc2" and mode == 2 and subMode == 4:
+                                        nud = "Nc3"
+                                elif nud == "Nc3" and mode == 2 and subMode == 4:
+                                        nud = "Nc1"
+                                elif nud == "Nr1" and mode == 5 and subMode == 1:
+                                        nud = "Nr2"
+                                elif nud == "Nr2" and mode == 5 and subMode == 1:
+                                        nud = "Nr3"
+                                elif nud == "Nr3" and mode == 5 and subMode == 1:
+                                        nud = "Nr1"
+
+                        if mouseHovering(nudgerOne):
+                                if nud == "Na" and mode == 1 and subMode == 1:
+                                        plane += 1
+                                        buttonLoc[6] += 1
+                                if nud == "Ne1" and mode == 1 and subMode == 3:
+                                        fNodes[f][edit][0] += 1
+                                        buttonLoc[0] += 1
+                                if nud == "Ne2" and mode == 1 and subMode == 3:
+                                        fNodes[f][edit][1] += 1
+                                        buttonLoc[1] += 1
+                                if nud == "Ne3" and mode == 1 and subMode == 3:
+                                        fNodes[f][edit][2] += 1
+                                        buttonLoc[2] += 1
+                                if nud == "Nc1" and mode == 2 and subMode == 4 and fPolColors[f][polEdit][0]+1 <= 255:
+                                        fPolColors[f][polEdit][0] += 1
+                                        buttonLoc[3] += 1
+                                if nud == "Nc2" and mode == 2 and subMode == 4 and fPolColors[f][polEdit][1]+1 <= 255:
+                                        fPolColors[f][polEdit][1] += 1
+                                        buttonLoc[4] += 1
+                                if nud == "Nc3" and mode == 2 and subMode == 4 and fPolColors[f][polEdit][2]+1 <= 255:
+                                        fPolColors[f][polEdit][2] += 1
+                                        buttonLoc[5] += 1
+                                if nud == "Nr1" and mode == 5 and subMode == 1:
+                                        fRots[f][0] += .001
+                                        buttonLoc[7] += .05
+                                if nud == "Nr2" and mode == 5 and subMode == 1:
+                                        fRots[f][1] += .001
+                                        buttonLoc[8] += .05
+                                if nud == "Nr3" and mode == 5 and subMode == 1:
+                                        fRots[f][2] += .001
+                                        buttonLoc[9] += .05
+
+                        if mouseHovering(nudgerTwo):
+                                if nud == "Na" and mode == 1 and subMode == 1:
+                                        plane -= 1
+                                        buttonLoc[6] -= 1
+                                if nud == "Ne1" and mode == 1 and subMode == 3:
+                                        fNodes[f][edit][0] -= 1
+                                        buttonLoc[0] -= 1
+                                if nud == "Ne2" and mode == 1 and subMode == 3:
+                                        fNodes[f][edit][1] -= 1
+                                        buttonLoc[1] -= 1
+                                if nud == "Ne3" and mode == 1 and subMode == 3:
+                                        fNodes[f][edit][2] -= 1
+                                        buttonLoc[2] -= 1
+                                if nud == "Nc1" and mode == 2 and subMode == 4 and fPolColors[f][polEdit][0]-1 >= 0:
+                                        fPolColors[f][polEdit][0] -= 1
+                                        buttonLoc[3] -= 1
+                                if nud == "Nc2" and mode == 2 and subMode == 4 and fPolColors[f][polEdit][1]-1 >= 0:
+                                        fPolColors[f][polEdit][1] -= 1
+                                        buttonLoc[4] -= 1
+                                if nud == "Nc3" and mode == 2 and subMode == 4 and fPolColors[f][polEdit][2]-1 >= 0:
+                                        fPolColors[f][polEdit][2] -= 1
+                                        buttonLoc[5] -= 1
+                                if nud == "Nr1" and mode == 5 and subMode == 1:
+                                        fRots[f][0] -= .001
+                                        buttonLoc[7] -= .05
+                                if nud == "Nr2" and mode == 5 and subMode == 1:
+                                        fRots[f][1] -= .001
+                                        buttonLoc[8] -= .05
+                                if nud == "Nr3" and mode == 5 and subMode == 1:
+                                        fRots[f][2] -= .001
+                                        buttonLoc[9] -= .05
+                        
                         if mouseHovering(bRect2) and mode == 6:
                                 
                                 #fNodes = [ frames [ nodes [x, y, z] ] ]
@@ -988,8 +1156,30 @@ while True:
                                         fMobs[f].append(lom)
                                         lom = []
                                         mobEdit = len(fMobs[f])-1
+                        if mouseHovering(delRect) and mode == 3 and subMode == 1:
+                                lom.remove(lom[len(lom)-1])
+                        if mouseHovering(cancelRect) and mode == 3 and subMode == 1:
+                                lom = []
+                                subMode = 0
                         if mouseHovering(addRect) and mode == 3 and subMode == 1:
                                 lom.append(edit)
+                        if mouseHovering(bRect1) and mode == 4 and subMode != 1:
+                                subMode = 1
+                                #Here, we take the mob that's selected (represented by mobEdit) and test to see how many frames have corresponding mobs with the same number of points.
+                                #The corresponding frames are saved to successfulMobs and if there is at least one corresponding frame, the auto-enabled mob is set to the sucess variable.
+                                #You might have to cut out all corresponding frames after the first none-corresponding frames, and make more complicated autos across separated frames later.
+                                successfulMob = []
+                                attemptedMob = copy.copy(mobEdit)
+                                if f < len(fNodes)-1:
+                                        indeks = 0
+                                        for frame in range(f+1,len(fNodes-1)):
+                                                if len(fMobs[indeks])-1 >= mobEdit and len(fMobs[indeks][mobEdit]) == len(fMobs[f][mobEdit]):
+                                                        successfulMob.append(indeks)
+                                                indeks += 1
+                                if len(successfulMob) != 0:
+                                        success = copy.copy(mobEdit)
+                                else:
+                                        success = -1
                         if mouseHovering(bRect4) and mode == 6 and editedF > 1:
                                 try:
                                         the_file = readFile(str(editedF-1)+".ndf")
@@ -1081,6 +1271,12 @@ while True:
                                 holding = 6
                         if mouseHovering(pScrollbar.button) and mode == 1 and subMode == 1:
                                 holding = 7
+                        if mouseHovering(roxScrollbar.button) and mode == 5 and subMode == 1:
+                                holding = 8
+                        if mouseHovering(royScrollbar.button) and mode == 5 and subMode == 1:
+                                holding = 9
+                        if mouseHovering(rozScrollbar.button) and mode == 5 and subMode == 1:
+                                holding = 10
                         
                 if event.type == MOUSEBUTTONUP:
                         clicking = False
